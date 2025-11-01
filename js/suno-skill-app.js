@@ -195,11 +195,14 @@ class SunoSkillApp {
     switchOutputTab(tab) {
         this.currentOutputTab = tab;
 
-        // Tab gombok
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
+        // Tab gombok – állapot frissítése a kiválasztott fül alapján
+        const buttons = document.querySelectorAll('.output-tabs .tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if (tab === 'english') {
+            buttons[0]?.classList.add('active');
+        } else if (tab === 'hungarian') {
+            buttons[1]?.classList.add('active');
+        }
 
         // Output területek
         document.getElementById('englishOutput').style.display = tab === 'english' ? 'block' : 'none';

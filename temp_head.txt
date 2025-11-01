@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno Lyrics Manager</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎵 Suno Lyrics Manager</h1>
+            <div class="header-actions">
+                <button class="btn btn-settings" id="settingsBtn">⚙️ Beállítások</button>
+                <div class="api-status" id="apiStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">API: Nincs beállítva</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Dalok</h3>
+                    <button class="btn btn-primary btn-full" id="newSongBtn">➕ Új dal</button>
+                    <div class="songs-list" id="songsList">
+                        <!-- Dalok listája -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Editor Area -->
+            <section class="editor">
+                <div class="editor-tabs">
+                    <button class="tab-btn active" data-tab="lyrics">Dalszöveg</button>
+                    <button class="tab-btn" data-tab="prompt">Suno Prompt</button>
+                    <button class="tab-btn" data-tab="settings">Beállítások</button>
+                </div>
+
+                <!-- Lyrics Tab -->
+                <div class="tab-content active" id="lyricsTab">
+                    <div class="editor-toolbar">
+                        <button class="btn" id="generateBtn">✨ Generálás</button>
+                        <button class="btn" id="translateBtn">🌍 Fordítás</button>
+                        <button class="btn" id="improveBtn">🔧 Javítás</button>
+                        <button class="btn" id="analyzeBtn">📊 Elemzés</button>
+                    </div>
+                    
+                    <div class="editor-content">
+                        <div class="input-group">
+                            <label for="songTitle">Dal címe:</label>
+                            <input type="text" id="songTitle" placeholder="Add meg a dal címét...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="lyricsEditor">Dalszöveg:</label>
+                            <textarea id="lyricsEditor" placeholder="Írj vagy generálj dalszöveget..."></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button class="btn btn-success" id="saveBtn">💾 Mentés</button>
+                            <button class="btn btn-ghost" id="clearBtn">🗑️ Törlés</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Tab -->
+                <div class="tab-content" id="promptTab">
+                    <div class="prompt-generator">
+                        <h3>Suno Prompt Generátor</h3>
+                        
+                        <div class="input-group">
+                            <label for="promptTheme">Téma / Leírás:</label>
+                            <textarea id="promptTheme" rows="3" placeholder="Írd le magyarul a dal témáját..."></textarea>
+                            <button class="btn btn-small" id="translateThemeBtn">HU → EN</button>
+                        </div>
