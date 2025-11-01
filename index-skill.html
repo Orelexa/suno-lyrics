@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno Lyrics SKILL Generator</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Suno Lyrics SKILL Generator</h1>
+            <p class="subtitle">Új dalszöveg generálása referencia dal szerkezete alapján</p>
+            <div class="firebase-status" id="firebaseStatus">
+                <span class="dot"></span>
+                <span class="status-text" id="apiStatusText">API: Nincs beállítva</span>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <!-- API Kulcs beállítás -->
+            <div class="api-setup" id="apiSetup">
+                <h3>⚙️ API Kulcsok Beállítása</h3>
+                
+                <div class="input-group">
+                    <label for="apiKeyInput">Gemini API Kulcs (dalszöveg generáláshoz):</label>
+                    <input type="password" id="apiKeyInput" placeholder="Írd be a Gemini API kulcsot..." />
+                    <small>Az API kulcsot a <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>-ban szerezheted meg (ingyenes).</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="chatgptApiKeyInput">ChatGPT API Kulcs (fordításhoz):</label>
+                    <input type="password" id="chatgptApiKeyInput" placeholder="Írd be a ChatGPT API kulcsot..." />
+                    <small>Az API kulcsot az <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>-on szerezheted meg.</small>
+                </div>
+
+                <button class="btn primary" onclick="app.saveApiKeys()">💾 Mentés</button>
+            </div>
+
+            <!-- Fő funkcionalitás -->
+            <div class="main-content" id="mainContent" style="display: none;">
+                <div class="two-column-layout">
+                    <!-- Bal oldal: Input -->
+                    <div class="input-section">
+                        <h2>📥 Input</h2>
+                        
+                        <div class="input-group">
+                            <label for="referenceLyrics">
+                                <strong>Input 1:</strong> Referencia dalszöveg (angol) 
+                                <span class="help-icon" title="Ez lesz a minta a szerkezetre, szótagszámra és rímekre">ℹ️</span>
+                            </label>
+                            <textarea id="referenceLyrics" rows="15" placeholder="Írd be a referencia angol dalszöveget...
+
+Példa:
+[Verse 1]
+Walking down the empty street at night
+Shadows dancing in the pale moonlight
+Every step I take feels so alone
+Wishing I could find my way back home
+
+[Chorus]
+Take me back to where I used to be
+Where the sky was blue and I was free
+..."></textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="newTheme">
+                                <strong>Input 2:</strong> Új téma
+                                <span class="help-icon" title="Ez lesz az új dalszöveg témája">ℹ️</span>
+                            </label>
+                            <input type="text" id="newTheme" placeholder="pl. 'boldogság és remény', 'téli szerelem', 'kaland a hegyek között'" />
+                        </div>
+
+                        <button class="btn primary generate-btn" onclick="app.generateStructuredLyrics()">
+                            ✨ Dalszöveg Generálás
+                        </button>
+
+                        <div class="actions">
+                            <button class="btn ghost" onclick="app.analyzeReference()">
+                                📊 Referencia Elemzése
+                            </button>
+                            <button class="btn ghost" onclick="app.clearAll()">
+                                🗑️ Törlés
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Jobb oldal: Output -->
+                    <div class="output-section">
+                        <h2>📤 Output</h2>
+
+                        <div class="output-tabs">
+                            <button class="tab-btn active" onclick="app.switchOutputTab('english')">🇬🇧 Angol</button>
+                            <button class="tab-btn" onclick="app.switchOutputTab('hungarian')">🇭🇺 Magyar</button>
+                        </div>
+
+                        <div class="output-content">
+                            <!-- Angol output -->
+                            <div class="output-tab active" id="englishOutput">
+                                <div class="output-header">
+                                    <label><strong>Output 1:</strong> Angol dalszöveg</label>
+                                    <button class="btn ghost small" onclick="app.copyToClipboard('english')">
+                                        📋 Másolás
+                                    </button>
+                                </div>
+                                <textarea id="englishLyrics" rows="15" placeholder="Az AI által generált angol dalszöveg itt fog megjelenni..." readonly></textarea>
+                            </div>
+
+                            <!-- Magyar output -->
+                            <div class="output-tab" id="hungarianOutput" style="display: none;">
+                                <div class="output-header">
+                                    <label><strong>Output 2:</strong> Magyar fordítás</label>
+                                    <button class="btn ghost small" onclick="app.copyToClipboard('hungarian')">
+                                        📋 Másolás
+                                    </button>
+                                </div>
+                                <textarea id="hungarianLyrics" rows="15" placeholder="A magyar fordítás itt fog megjelenni..." readonly></textarea>
+                            </div>
+                        </div>
+
+                        <div class="output-actions">
+                            <button class="btn ok" onclick="app.saveAsFile()">
+                                💾 Mentés Fájlba
+                            </button>
+                            <button class="btn ghost" onclick="app.exportBoth()">
+                                📤 Mindkettő Exportálása
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Elemzési eredmény (opcionális) -->
+                <div class="analysis-section" id="analysisSection" style="display: none;">
+                    <h3>📊 Referencia Elemzés</h3>
+                    <div class="analysis-content" id="analysisContent"></div>
+                    <button class="btn ghost small" onclick="app.closeAnalysis()">Bezárás</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loadingText">Dalszöveg generálása folyamatban...</p>
+    </div>
+
+    <!-- Toast üzenetek -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
+    <script src="js/gemini.js"></script>
+    <script src="js/suno-skill-app.js"></script>
+</body>
+</html>
