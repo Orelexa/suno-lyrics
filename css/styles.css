@@ -161,6 +161,7 @@ body {
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition);
+    position: relative;
 }
 
 .song-item:hover {
@@ -173,6 +174,23 @@ body {
     background: var(--bg-hover);
     border-color: var(--accent-purple);
     box-shadow: 0 0 0 2px rgba(190, 149, 255, 0.2);
+}
+
+.song-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.song-delete:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
 }
 
 .song-item-title {

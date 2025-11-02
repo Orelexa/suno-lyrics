@@ -51,6 +51,13 @@ class SunoLyricsApp {
 
         // Dal lista kattintás (delegált)
         document.getElementById('songsList')?.addEventListener('click', (e) => {
+            const del = e.target.closest('.song-delete');
+            if (del && del.dataset && del.dataset.id) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.deleteSongById(del.dataset.id);
+                return;
+            }
             const item = e.target.closest('.song-item');
             if (item && item.dataset && item.dataset.id) {
                 this.loadSong(item.dataset.id);
@@ -66,8 +73,7 @@ class SunoLyricsApp {
         // SKILL panel
         document.getElementById('skillGenerateBtn')?.addEventListener('click', () => this.skillGenerate());
 
-        // Dal törlése
-        document.getElementById('deleteSongBtn')?.addEventListener('click', () => this.deleteCurrentSong());
+        // (Lista ikonról törlés: eseménykezelő delegálva a songsList-re)
 
         // Export/Import
         document.getElementById('exportBtn')?.addEventListener('click', () => this.exportSongs());
@@ -152,6 +158,7 @@ class SunoLyricsApp {
             <div class="song-item ${song.id === this.currentSongId ? 'active' : ''}" data-id="${song.id}">
                 <div class="song-item-title">${this.escapeHtml(song.title || 'Névtelen dal')}</div>
                 <div class="song-item-date">${this.formatDate(song.date)}</div>
+                <button class="song-delete" data-id="${song.id}" title="Dal törlése" aria-label="Dal törlése">🗑️</button>
             </div>
         `).join('');
     }
