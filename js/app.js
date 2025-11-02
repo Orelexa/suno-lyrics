@@ -49,6 +49,9 @@ class SunoLyricsApp {
         document.getElementById('translateThemeBtn')?.addEventListener('click', () => this.translateTheme());
         document.getElementById('copyPromptBtn')?.addEventListener('click', () => this.copyPrompt());
 
+        // SKILL panel
+        document.getElementById('skillGenerateBtn')?.addEventListener('click', () => this.skillGenerate());
+
         // Export/Import
         document.getElementById('exportBtn')?.addEventListener('click', () => this.exportSongs());
         document.getElementById('importBtn')?.addEventListener('click', () => this.importSongs());
@@ -544,6 +547,37 @@ class SunoLyricsApp {
 }
 
 // Alkalmazás inicializálása
+// SKILL: Strukturált dalszöveg generálás (prototype)
+SunoLyricsApp.prototype.skillGenerate = async function () {
+    const referenceEl = document.getElementById('skillReference');
+    const themeEl = document.getElementById('skillTheme');
+    const englishEl = document.getElementById('skillEnglish');
+    const hungarianEl = document.getElementById('skillHungarian');
+
+    const reference = referenceEl ? referenceEl.value.trim() : '';
+    const theme = themeEl ? themeEl.value.trim() : '';
+
+    if (!reference) {
+        this.showMessage('Kérlek add meg a referencia dalszöveget!', 'error');
+        return;
+    }
+    if (!theme) {
+        this.showMessage('Kérlek add meg a témát!', 'error');
+        return;
+    }
+
+    try {
+        this.showMessage('Strukturált generálás folyamatban...', 'loading');
+        const result = await geminiAPI.generateStructuredLyrics(reference, theme);
+        if (englishEl) englishEl.value = (result?.english || '').trim();
+        if (hungarianEl) hungarianEl.value = (result?.hungarian || '').trim();
+        this.showMessage('Dalszöveg sikeresen generálva!', 'success');
+    } catch (error) {
+        console.error(error);
+        this.showMessage(`Hiba: ${error.message}`, 'error');
+    }
+};
+
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new SunoLyricsApp();

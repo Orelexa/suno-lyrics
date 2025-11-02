@@ -37,6 +37,7 @@
                 <div class="editor-tabs">
                     <button class="tab-btn active" data-tab="lyrics">Dalszöveg</button>
                     <button class="tab-btn" data-tab="prompt">Suno Prompt</button>
+                    <button class="tab-btn" data-tab="skill">SKILL</button>
                     <button class="tab-btn" data-tab="settings">Beállítások</button>
                 </div>
 
@@ -108,6 +109,36 @@
                     </div>
                 </div>
 
+                <!-- SKILL Tab -->
+                <div class="tab-content" id="skillTab">
+                    <h3>Suno Lyrics SKILL</h3>
+                    <p>Cél: Angol nyelvű zeneszöveg írás referencia dal szerkezete alapján. Output: új angol dalszöveg (azonos szótagok/rímek/struktúra) + magyar fordítás.</p>
+
+                    <div class="input-group">
+                        <label for="skillReference">Referencia dalszöveg (angol):</label>
+                        <textarea id="skillReference" rows="10" placeholder="Másold ide az angol referencia dalszöveget, a szekciójelölésekkel ([Verse], [Chorus], [Bridge])..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="skillTheme">Téma:</label>
+                        <input type="text" id="skillTheme" placeholder="pl. boldogság és remény, téli szerelem, kaland a hegyekben">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="skillGenerateBtn">Strukturált generálás</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="skillEnglish">Output 1: Angol dalszöveg</label>
+                        <textarea id="skillEnglish" rows="10" placeholder="Az AI által generált angol dalszöveg itt jelenik meg..." readonly></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="skillHungarian">Output 2: Magyar fordítás</label>
+                        <textarea id="skillHungarian" rows="10" placeholder="Az AI által generált magyar fordítás itt jelenik meg..." readonly></textarea>
+                    </div>
+                </div>
+
                 <!-- Settings Tab -->
                 <div class="tab-content" id="settingsTab">
                     <div class="settings-panel">
@@ -153,4 +184,3 @@
     <script src="js/app.js"></script>
   </body>
   </html>
-
