@@ -49,6 +49,20 @@ class SunoLyricsApp {
         document.getElementById('translateThemeBtn')?.addEventListener('click', () => this.translateTheme());
         document.getElementById('copyPromptBtn')?.addEventListener('click', () => this.copyPrompt());
 
+        // Dal lista kattintás (delegált)
+        document.getElementById('songsList')?.addEventListener('click', (e) => {
+            const item = e.target.closest('.song-item');
+            if (item && item.dataset && item.dataset.id) {
+                this.loadSong(item.dataset.id);
+                this.switchTab('lyrics');
+            }
+        });
+
+        // Másolás gombok
+        document.getElementById('copyLyricsBtn')?.addEventListener('click', () => this.copyById('lyricsEditor'));
+        document.getElementById('copySkillEnglishBtn')?.addEventListener('click', () => this.copyById('skillEnglish'));
+        document.getElementById('copySkillHungarianBtn')?.addEventListener('click', () => this.copyById('skillHungarian'));
+
         // SKILL panel
         document.getElementById('skillGenerateBtn')?.addEventListener('click', () => this.skillGenerate());
 
@@ -132,8 +146,7 @@ class SunoLyricsApp {
         }
         
         listEl.innerHTML = this.songs.map(song => `
-            <div class="song-item ${song.id === this.currentSongId ? 'active' : ''}" 
-                 onclick="app.loadSong('${song.id}')">
+            <div class="song-item ${song.id === this.currentSongId ? 'active' : ''}" data-id="${song.id}">
                 <div class="song-item-title">${this.escapeHtml(song.title || 'Névtelen dal')}</div>
                 <div class="song-item-date">${this.formatDate(song.date)}</div>
             </div>
@@ -166,6 +179,7 @@ class SunoLyricsApp {
         this.currentSongId = songId;
         this.renderSongsList();
         this.loadSongToEditor(song);
+        this.switchTab('lyrics');
     }
 
     loadSongToEditor(song) {
@@ -444,6 +458,19 @@ class SunoLyricsApp {
         }).catch(() => {
             this.showMessage('Másolás sikertelen!', 'error');
         });
+    }
+
+    // Egyszerű általános másoló adott elem ID alapján
+    copyById(elementId) {
+        const el = document.getElementById(elementId);
+        const text = el?.value?.trim() || '';
+        if (!text) {
+            this.showMessage('Nincs mit másolni!', 'error');
+            return;
+        }
+        navigator.clipboard.writeText(text)
+            .then(() => this.showMessage('Vágólapra másolva!', 'success'))
+            .catch(() => this.showMessage('Másolás sikertelen!', 'error'));
     }
 
     // Export/Import
