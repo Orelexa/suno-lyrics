@@ -66,6 +66,9 @@ class SunoLyricsApp {
         // SKILL panel
         document.getElementById('skillGenerateBtn')?.addEventListener('click', () => this.skillGenerate());
 
+        // Dal törlése
+        document.getElementById('deleteSongBtn')?.addEventListener('click', () => this.deleteCurrentSong());
+
         // Export/Import
         document.getElementById('exportBtn')?.addEventListener('click', () => this.exportSongs());
         document.getElementById('importBtn')?.addEventListener('click', () => this.importSongs());
@@ -213,6 +216,44 @@ class SunoLyricsApp {
             document.getElementById('lyricsEditor').value = '';
             this.showMessage('Szerkesztő törölve!', 'info');
         }
+    }
+
+    // Kijelölt dal törlése
+    deleteCurrentSong() {
+        if (!this.currentSongId) {
+            this.showMessage('Nincs kiválasztott dal!', 'error');
+            return;
+        }
+
+        const idx = this.songs.findIndex(s => s.id === this.currentSongId);
+        if (idx === -1) {
+            this.showMessage('A kijelölt dal nem található.', 'error');
+            return;
+        }
+
+        if (!confirm('Biztosan törlöd a kijelölt dalt?')) return;
+
+        this.songs.splice(idx, 1);
+        this.saveSongs();
+
+        if (this.songs.length > 0) {
+            const next = this.songs[Math.min(idx, this.songs.length - 1)];
+            this.currentSongId = next.id;
+            this.renderSongsList();
+            this.loadSongToEditor(next);
+        } else {
+            this.currentSongId = null;
+            this.renderSongsList();
+            const titleEl = document.getElementById('songTitle');
+            const lyricsEl = document.getElementById('lyricsEditor');
+            const promptEl = document.getElementById('generatedPrompt');
+            if (titleEl) titleEl.value = '';
+            if (lyricsEl) lyricsEl.value = '';
+            if (promptEl) promptEl.value = '';
+        }
+
+        this.switchTab('lyrics');
+        this.showMessage('Dal törölve!', 'success');
     }
 
     // AI Funkciók
