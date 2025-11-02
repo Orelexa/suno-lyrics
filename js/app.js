@@ -222,11 +222,14 @@ class SunoLyricsApp {
         
         try {
             this.showMessage('Dalszöveg generálása...', 'loading');
+            showOverlay('Dalszöveg generálása...');
             const lyrics = await geminiAPI.generateLyrics(theme, style, mood);
             document.getElementById('lyricsEditor').value = lyrics;
             this.showMessage('Dalszöveg sikeresen generálva!', 'success');
+            hideOverlay();
         } catch (error) {
             this.showMessage(`Hiba: ${error.message}`, 'error');
+            hideOverlay();
         }
     }
 
@@ -568,13 +571,16 @@ SunoLyricsApp.prototype.skillGenerate = async function () {
 
     try {
         this.showMessage('Strukturált generálás folyamatban...', 'loading');
+        showOverlay('Strukturált generálás...');
         const result = await geminiAPI.generateStructuredLyrics(reference, theme);
         if (englishEl) englishEl.value = (result?.english || '').trim();
         if (hungarianEl) hungarianEl.value = (result?.hungarian || '').trim();
         this.showMessage('Dalszöveg sikeresen generálva!', 'success');
+        hideOverlay();
     } catch (error) {
         console.error(error);
         this.showMessage(`Hiba: ${error.message}`, 'error');
+        hideOverlay();
     }
 };
 
@@ -582,3 +588,16 @@ let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new SunoLyricsApp();
 });
+
+// Simple global loading helpers
+function showOverlay(message) {
+    const ov = document.getElementById('loadingOverlay');
+    const txt = document.getElementById('loadingText');
+    if (txt && message) txt.textContent = message;
+    if (ov) ov.style.display = 'flex';
+}
+
+function hideOverlay() {
+    const ov = document.getElementById('loadingOverlay');
+    if (ov) ov.style.display = 'none';
+}

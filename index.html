@@ -13,7 +13,7 @@
         <header class="header">
             <h1>Suno Lyrics Manager</h1>
             <div class="header-actions">
-                <button class="btn btn-settings" id="settingsBtn">Beállítások</button>
+                <button class="btn btn-settings" id="settingsBtn">Export/Import</button>
                 <div class="api-status" id="apiStatus">
                     <span class="status-dot"></span>
                     <span class="status-text">API: Csatlakozva</span>
@@ -38,7 +38,7 @@
                     <button class="tab-btn active" data-tab="lyrics">Dalszöveg</button>
                     <button class="tab-btn" data-tab="prompt">Suno Prompt</button>
                     <button class="tab-btn" data-tab="skill">SKILL</button>
-                    <button class="tab-btn" data-tab="settings">Beállítások</button>
+                    <button class="tab-btn" data-tab="settings">Export/Import</button>
                 </div>
 
                 <!-- Lyrics Tab -->
@@ -142,8 +142,6 @@
                 <!-- Settings Tab -->
                 <div class="tab-content" id="settingsTab">
                     <div class="settings-panel">
-                        <h3>API Beállítások</h3>
-                        <hr>
                         <h3>Exportálás / Importálás</h3>
                         <div class="button-group">
                             <button class="btn" id="exportBtn">Dalok exportálása</button>
@@ -176,6 +174,12 @@
                 <button class="btn btn-ghost" id="cancelGenerateBtn">Mégse</button>
             </div>
         </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loadingText">Feldolgozás...</p>
     </div>
 
     <!-- Scripts -->
