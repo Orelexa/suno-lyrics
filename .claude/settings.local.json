@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m http.server:*)",
+      "Bash(timeout 3 bash:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright install chromium)",
+      "Bash(npx playwright test --headed)",
+      "Bash(npx playwright test:*)",
+      "Bash(dir /b netlify* 2)",
+      "Bash(nul)",
+      "Bash(if exist netlify rmdir /s /q netlify)",
+      "Bash(if exist netlify.toml del netlify.toml)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

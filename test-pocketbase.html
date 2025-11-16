@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketBase Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 PocketBase Connection Test</h1>
+
+    <div class="test-box">
+        <h2>1. PocketBase Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>2. Collections Check</h2>
+        <button onclick="checkCollections()">Check Collections</button>
+        <div id="collectionsResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>3. Test Registration</h2>
+        <input type="text" id="testUsername" placeholder="Test Username (pl: testuser123)">
+        <input type="email" id="testEmail" placeholder="Test Email (pl: test@example.com)">
+        <input type="password" id="testPassword" placeholder="Test Password (min 8 karakter)">
+        <button onclick="testRegister()">Test Register</button>
+        <div id="registerResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>4. Test Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <script type="module">
+        import PocketBase from 'https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.es.mjs';
+
+        window.pb = new PocketBase('http://192.168.1.122:8090');
+        console.log('PocketBase initialized:', window.pb);
+
+        window.testConnection = async function() {
+            const result = document.getElementById('connectionResult');
+            result.innerHTML = '<div class="info">Testing connection...</div>';
+
+            try {
+                const health = await fetch('http://192.168.1.122:8090/api/health');
+                if (health.ok) {
+                    result.innerHTML = '<div class="success">✅ PocketBase is running and accessible!</div>';
+                } else {
+                    result.innerHTML = '<div class="error">❌ PocketBase returned error: ' + health.status + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ Cannot connect to PocketBase: ' + error.message + '</div>';
+                result.innerHTML += '<div class="info">Make sure PocketBase is running on http://192.168.1.122:8090</div>';
+            }
+        };
+
+        window.checkCollections = async function() {
+            const result = document.getElementById('collectionsResult');
+            result.innerHTML = '<div class="info">Checking collections...</div>';
+
+            try {
+                // Try to get collections info
+                const collections = await window.pb.collections.getFullList();
+
+                result.innerHTML = '<div class="success">✅ Found ' + collections.length + ' collections</div>';
+                result.innerHTML += '<pre>' + JSON.stringify(collections.map(c => ({
+                    name: c.name,
+                    type: c.type,
+                    id: c.id
+                })), null, 2) + '</pre>';
+
+                const hasUsers = collections.some(c => c.name === 'users');
+                const hasSongs = collections.some(c => c.name === 'songs');
+
+                if (!hasUsers) {
+                    result.innerHTML += '<div class="error">❌ "users" collection NOT found! Create it in PocketBase Admin.</div>';
+                }
+                if (!hasSongs) {
+                    result.innerHTML += '<div class="error">❌ "songs" collection NOT found! Create it in PocketBase Admin.</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ Error checking collections: ' + error.message + '</div>';
+                console.error('Collections error:', error);
+            }
+        };
+
+        window.testRegister = async function() {
+            const result = document.getElementById('registerResult');
+            const username = document.getElementById('testUsername').value.trim();
+            const email = document.getElementById('testEmail').value.trim();
+            const password = document.getElementById('testPassword').value;
+
+            if (!username || !email || !password) {
+                result.innerHTML = '<div class="error">❌ Please fill all fields</div>';
+                return;
+            }
+
+            if (password.length < 8) {
+                result.innerHTML = '<div class="error">❌ Password must be at least 8 characters</div>';
+                return;
+            }
+
+            result.innerHTML = '<div class="info">Attempting registration...</div>';
+
+            try {
+                const data = {
+                    username: username,
+                    email: email,
+                    password: password,
+                    passwordConfirm: password,
+                    emailVisibility: true
+                };
+
+                console.log('Registration data:', data);
+                const record = await window.pb.collection('users').create(data);
+
+                result.innerHTML = '<div class="success">✅ Registration successful!</div>';
+                result.innerHTML += '<pre>' + JSON.stringify(record, null, 2) + '</pre>';
+
+                // Auto-fill login form
+                document.getElementById('loginEmail').value = email;
+                document.getElementById('loginPassword').value = password;
+            } catch (error) {
+                console.error('Registration error:', error);
+                result.innerHTML = '<div class="error">❌ Registration failed: ' + error.message + '</div>';
+
+                if (error.data?.data) {
+                    result.innerHTML += '<div class="error">Details: <pre>' + JSON.stringify(error.data.data, null, 2) + '</pre></div>';
+                }
+
+                // Common issues
+                result.innerHTML += '<div class="info"><strong>Common issues:</strong><ul>';
+                result.innerHTML += '<li>Username or email already exists</li>';
+                result.innerHTML += '<li>Users collection not configured correctly</li>';
+                result.innerHTML += '<li>Required fields missing in PocketBase schema</li>';
+                result.innerHTML += '</ul></div>';
+            }
+        };
+
+        window.testLogin = async function() {
+            const result = document.getElementById('loginResult');
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                result.innerHTML = '<div class="error">❌ Please fill all fields</div>';
+                return;
+            }
+
+            result.innerHTML = '<div class="info">Attempting login...</div>';
+
+            try {
+                const authData = await window.pb.collection('users').authWithPassword(email, password);
+
+                result.innerHTML = '<div class="success">✅ Login successful!</div>';
+                result.innerHTML += '<pre>' + JSON.stringify({
+                    token: authData.token,
+                    user: authData.record
+                }, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Login error:', error);
+                result.innerHTML = '<div class="error">❌ Login failed: ' + error.message + '</div>';
+            }
+        };
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testConnection();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

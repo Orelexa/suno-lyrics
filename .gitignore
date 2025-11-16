@@ -1,32 +1,28 @@
+# API Keys és érzékeny adatok
+.env
+.env.local
+.env.*.local
+js/config.js
+
 # Node modules
 node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# IDE
+# OS fájlok
+.DS_Store
+Thumbs.db
+
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-.env.local
-
-# Build outputs
-dist/
-build/
-
-# API Keys (ne kommitold!)
-api-keys.txt
-secrets.json
-
-# Temporary files
-*.tmp
-*.log

@@ -1,0 +1,25 @@
+{
+  "name": "suno-lyrics-tests",
+  "version": "1.0.0",
+  "description": "Automated tests for Suno Lyrics Manager",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:generate": "playwright test tests/generate.spec.js",
+    "test:ui": "playwright test --ui",
+    "server": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["suno", "lyrics", "testing", "playwright"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

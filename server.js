@@ -1,73 +1,80 @@
-// Netlify Function: OpenAI proxy for Suno Lyrics (generation + translation)
-// Uses environment variable OPENAI_API_KEY
+// Node.js Express Backend for OpenAI Proxy
+// Run with: node server.js
+// Requires: npm install express cors dotenv
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
+const app = express();
+const PORT = 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// OpenAI proxy endpoint
+app.post('/api/openai', async (req, res) => {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return { statusCode: 500, body: 'Missing OPENAI_API_KEY' };
+      return res.status(500).json({ error: 'Missing OPENAI_API_KEY in .env file' });
     }
 
-    const { action, payload } = JSON.parse(event.body || '{}');
+    const { action, payload } = req.body;
     if (!action) {
-      return { statusCode: 400, body: 'Missing action' };
+      return res.status(400).json({ error: 'Missing action' });
     }
 
-    const req = buildOpenAIRequest(action, payload);
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openaiRequest = buildOpenAIRequest(action, payload);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(req),
+      body: JSON.stringify(openaiRequest),
     });
 
-    if (!res.ok) {
-      const err = await safeJson(res);
-      return { statusCode: res.status, body: JSON.stringify(err) };
+    if (!response.ok) {
+      const error = await safeJson(response);
+      return res.status(response.status).json(error);
     }
 
-    const data = await res.json();
+    const data = await response.json();
     const content = data.choices?.[0]?.message?.content ?? '';
 
-    // For structured generation we return both texts already combined
+    // For structured generation, get Hungarian translation
     if (action === 'generate_structured') {
-      // content is expected as English lyrics; now get Hungarian translation
       const translationReq = buildOpenAIRequest('translate_hu', { lyrics: content });
       const tRes = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify(translationReq),
       });
+
       if (!tRes.ok) {
         const err = await safeJson(tRes);
-        return { statusCode: tRes.status, body: JSON.stringify(err) };
+        return res.status(tRes.status).json(err);
       }
+
       const tData = await tRes.json();
       const hu = tData.choices?.[0]?.message?.content ?? '';
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ english: content.trim(), hungarian: hu.trim() }),
-      };
+      return res.json({ english: content.trim(), hungarian: hu.trim() });
     }
 
-    return { statusCode: 200, body: JSON.stringify({ content }) };
-  } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: String(e) }) };
+    res.json({ content });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: String(error) });
   }
-};
+});
 
 function buildOpenAIRequest(action, payload = {}) {
   const model = 'gpt-4o-mini';
-
   const sys = (text) => ({ role: 'system', content: text });
   const usr = (text) => ({ role: 'user', content: text });
 
@@ -78,9 +85,7 @@ function buildOpenAIRequest(action, payload = {}) {
         model,
         messages: [
           sys('Te egy tapasztalt dalszövegíró vagy. Írj jól strukturált, érzelmes dalszöveget.'),
-          usr(
-            `Téma: ${theme}\nStílus: ${style}\nHangulat: ${mood}\n\nHasználj verses szerkezetet: [Verse 1], [Chorus], [Verse 2], [Chorus], [Bridge], [Chorus].\nCsak a dalszöveget add vissza.`,
-          ),
+          usr(`Téma: ${theme}\nStílus: ${style}\nHangulat: ${mood}\n\nHasználj verses szerkezetet: [Verse 1], [Chorus], [Verse 2], [Chorus], [Bridge], [Chorus].\nCsak a dalszöveget add vissza.`),
         ],
         temperature: 0.9,
         max_tokens: 1200,
@@ -91,12 +96,8 @@ function buildOpenAIRequest(action, payload = {}) {
       return {
         model,
         messages: [
-          sys(
-            'Te egy profi dalszövegíró vagy. Készíts új angol dalszöveget úgy, hogy pontosan követi a referencia dal szótagszámát soronként, a sorvégi rímek elhelyezkedését, a versszakok struktúráját ([Verse], [Chorus], [Bridge], stb.), valamint a ritmust és hangsúlyokat. Csak a dalszöveget add vissza címkékkel együtt.',
-          ),
-          usr(
-            `Referencia dalszöveg (angol):\n${referenceLyrics}\n\n---\nÚj téma: ${newTheme}\n---\n\nFeladat: Írj teljesen új angol dalszöveget az új témáról, amely FORMÁJÁBAN (szótagszám, rímképlet, szakaszok) megegyezik a referenciával, de TARTALMÁBAN az új témáról szól.`,
-          ),
+          sys('Te egy profi dalszövegíró vagy. Készíts új angol dalszöveget úgy, hogy pontosan követi a referencia dal szótagszámát soronként, a sorvégi rímek elhelyezkedését, a versszakok struktúráját ([Verse], [Chorus], [Bridge], stb.), valamint a ritmust és hangsúlyokat. Csak a dalszöveget add vissza címkékkel együtt.'),
+          usr(`Referencia dalszöveg (angol):\n${referenceLyrics}\n\n---\nÚj téma: ${newTheme}\n---\n\nFeladat: Írj teljesen új angol dalszöveget az új témáról, amely FORMÁJÁBAN (szótagszám, rímképlet, szakaszok) megegyezik a referenciával, de TARTALMÁBAN az új témáról szól.`),
         ],
         temperature: 0.9,
         max_tokens: 1400,
@@ -204,6 +205,15 @@ function buildOpenAIRequest(action, payload = {}) {
 }
 
 async function safeJson(res) {
-  try { return await res.json(); } catch { return { error: await res.text() }; }
+  try {
+    return await res.json();
+  } catch {
+    return { error: await res.text() };
+  }
 }
 
+app.listen(PORT, () => {
+  console.log(`🚀 OpenAI Proxy Server running on http://localhost:${PORT}`);
+  console.log(`📡 Endpoint: http://localhost:${PORT}/api/openai`);
+  console.log(`⚠️  Make sure OPENAI_API_KEY is set in .env file`);
+});

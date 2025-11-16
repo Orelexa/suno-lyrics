@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suno Lyrics Manager</title>
     <link rel="stylesheet" href="css/styles.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.openai.com; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.openai.com http://192.168.1.122:8090 http://192.168.1.122:3001 https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net; font-src 'self' data:;">
 </head>
 <body>
     <div class="container">
@@ -13,7 +13,11 @@
         <header class="header">
             <h1>Suno Lyrics Manager</h1>
             <div class="header-actions">
-                <button class="btn btn-settings" id="settingsBtn">Export/Import</button>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span id="userName"></span>
+                    <button class="btn btn-ghost btn-small" id="logoutBtn">Kijelentkezés</button>
+                </div>
+                <button class="btn btn-primary" id="loginBtn">Bejelentkezés</button>
                 <div class="api-status" id="apiStatus">
                     <span class="status-dot"></span>
                     <span class="status-text">API: Csatlakozva</span>
@@ -38,7 +42,6 @@
                     <button class="tab-btn active" data-tab="lyrics">Dalszöveg</button>
                     <button class="tab-btn" data-tab="prompt">Suno Prompt</button>
                     <button class="tab-btn" data-tab="skill">SKILL</button>
-                    <button class="tab-btn" data-tab="settings">Export/Import</button>
                 </div>
 
                 <!-- Lyrics Tab -->
@@ -142,16 +145,6 @@
                     </div>
                 </div>
 
-                <!-- Settings Tab -->
-                <div class="tab-content" id="settingsTab">
-                    <div class="settings-panel">
-                        <h3>Exportálás / Importálás</h3>
-                        <div class="button-group">
-                            <button class="btn" id="exportBtn">Dalok exportálása</button>
-                            <button class="btn" id="importBtn">Dalok importálása</button>
-                        </div>
-                    </div>
-                </div>
             </section>
         </main>
     </div>
@@ -185,8 +178,75 @@
         <p class="loading-text" id="loadingText">Feldolgozás...</p>
     </div>
 
+    <!-- Login/Register Modal -->
+    <div class="modal" id="authModal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="authModalTitle">Bejelentkezés</h2>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-auth-tab="login">Bejelentkezés</button>
+                <button class="auth-tab" data-auth-tab="register">Regisztráció</button>
+            </div>
+
+            <!-- Login Form -->
+            <div class="auth-form active" id="loginForm">
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" placeholder="email@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Jelszó:</label>
+                    <input type="password" id="loginPassword" placeholder="Jelszó">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="confirmLoginBtn">Bejelentkezés</button>
+                    <button class="btn btn-ghost" id="cancelAuthBtn">Mégse</button>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm">
+                <div class="input-group">
+                    <label>Felhasználónév:</label>
+                    <input type="text" id="registerUsername" placeholder="felhasznalonev">
+                </div>
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" id="registerEmail" placeholder="email@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Jelszó:</label>
+                    <input type="password" id="registerPassword" placeholder="Jelszó (min. 8 karakter)">
+                </div>
+                <div class="input-group">
+                    <label>Jelszó megerősítése:</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="Jelszó újra">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="confirmRegisterBtn">Regisztráció</button>
+                    <button class="btn btn-ghost" id="cancelRegisterBtn">Mégse</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Migration Modal -->
+    <div class="modal" id="migrationModal" style="display: none;">
+        <div class="modal-content">
+            <h2>LocalStorage Dalok Importálása</h2>
+            <p>Találtam LocalStorage-ben tárolt dalokat. Szeretnéd importálni őket a PocketBase-be?</p>
+            <p id="migrationSongCount"></p>
+            <div class="button-group">
+                <button class="btn btn-primary" id="confirmMigrationBtn">Igen, importálás</button>
+                <button class="btn btn-ghost" id="skipMigrationBtn">Kihagyás</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script type="module" src="js/pocketbase.js"></script>
     <script src="js/gemini.js"></script>
-    <script src="js/app.js"></script>
+    <script type="module" src="js/app-pocketbase.js"></script>
   </body>
   </html>
